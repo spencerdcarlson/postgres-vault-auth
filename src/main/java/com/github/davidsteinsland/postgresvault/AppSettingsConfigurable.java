@@ -1,6 +1,6 @@
 // Copyright 2000-2020 JetBrains s.r.o. and other contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 
-package org.intellij.sdk.settings;
+package com.github.davidsteinsland.postgresvault;
 
 import com.intellij.openapi.options.Configurable;
 import org.jetbrains.annotations.Nls;
@@ -21,7 +21,7 @@ public class AppSettingsConfigurable implements Configurable {
     @Nls(capitalization = Nls.Capitalization.Title)
     @Override
     public String getDisplayName() {
-        return "SDK: Application Settings Example";
+        return "Vault";
     }
 
     @Override
@@ -39,23 +39,29 @@ public class AppSettingsConfigurable implements Configurable {
     @Override
     public boolean isModified() {
         AppSettingsState settings = AppSettingsState.getInstance();
-        boolean modified = !mySettingsComponent.getUserNameText().equals(settings.userId);
-        modified |= mySettingsComponent.getIdeaUserStatus() != settings.ideaStatus;
+        boolean modified = !mySettingsComponent.getVaultAddrText().equals(settings.vaultAddr);
+        modified |= mySettingsComponent.getVaultAuthType() != settings.type;
+        modified |= mySettingsComponent.getUsername().equals(settings.oktaUsername);
+        modified |= mySettingsComponent.getPassword().equals(settings.oktaPassword);
         return modified;
     }
 
     @Override
     public void apply() {
         AppSettingsState settings = AppSettingsState.getInstance();
-        settings.userId = mySettingsComponent.getUserNameText();
-        settings.ideaStatus = mySettingsComponent.getIdeaUserStatus();
+        settings.vaultAddr = mySettingsComponent.getVaultAddrText();
+        settings.type = mySettingsComponent.getVaultAuthType();
+        settings.oktaUsername = mySettingsComponent.getUsername();
+        settings.oktaPassword = mySettingsComponent.getPassword();
     }
 
     @Override
     public void reset() {
         AppSettingsState settings = AppSettingsState.getInstance();
-        mySettingsComponent.setUserNameText(settings.userId);
-        mySettingsComponent.setIdeaUserStatus(settings.ideaStatus);
+        mySettingsComponent.setVaultAddrText(settings.vaultAddr);
+        mySettingsComponent.setVaultAuthType(settings.type);
+        mySettingsComponent.setUsername(settings.oktaUsername);
+        mySettingsComponent.setPassword(settings.oktaPassword);
     }
 
     @Override

@@ -14,12 +14,10 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="org.intellij.sdk.settings.AppSettingsState"/>
-    </extensions>
+        <applicationService serviceImplementation="com.github.davidsteinsland.postgresvault.AppSettingsState"/>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <applicationConfigurable parentId="tools" instance="org.intellij.sdk.settings.AppSettingsConfigurable"
-                                 id="org.intellij.sdk.settings.AppSettingsConfigurable"
-                                 displayName="SDK: Application Settings Example"/>
+        <applicationConfigurable parentId="tools" instance="com.github.davidsteinsland.postgresvault.AppSettingsConfigurable"
+                                 id="com.github.davidsteinsland.postgresvault.AppSettingsConfigurable"
+                                 displayName="Vault"/>
     </extensions>
 </idea-plugin>

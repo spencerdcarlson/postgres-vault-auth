@@ -4,19 +4,17 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.io.File
 import java.io.IOException
+import java.util.*
+import kotlin.streams.toList
 
 internal class Vault {
-    var addr: String = "http://localhost"
+    var addr: String = "https://vault.podium.com"
         get() = field
         set(value) { field = value }
 
     private companion object {
         private val mapper = jacksonObjectMapper()
         private val vaultExec get() = findExecutable("vault")
-
-
-
-
         private val executableSearchPaths = listOf(
             "/usr/local/bin",
             "/usr/bin",
@@ -38,9 +36,18 @@ internal class Vault {
         return executeAndReturnJson(vaultExec, "read", "-format=json", path)
     }
 
-    private fun authenticate() {
-        if (isAuthenticated()) return
-        executeAndReturnJson(vaultExec, "login", "-method=oidc", "-format=json")
+    fun authenticate(type: VaultAuthType = VaultAuthType.OIDC, args: Map<String, String>? = null, force: Boolean = false): Boolean {
+        if (isAuthenticated() && !force) return true
+        val extraArgs = args?.entries?.stream()?.map { it.toString() }?.toList()?.toTypedArray() ?: arrayOf("")
+        println("type: ${type.name}. extra args: ${extraArgs.contentToString()}")
+        try {
+            executeAndReturnJson(vaultExec, "login", "-method=${type.name.toLowerCase()}", *extraArgs, "-format=json")
+        }
+        catch (e: IOException) {
+            print(e.localizedMessage)
+            return false
+        }
+        return true
     }
 
     private fun isAuthenticated(): Boolean =

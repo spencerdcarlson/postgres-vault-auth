@@ -1,4 +1,6 @@
-package org.intellij.sdk.settings;
+// Copyright 2000-2020 JetBrains s.r.o. and other contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
+
+package com.github.davidsteinsland.postgresvault;
 
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
@@ -19,8 +21,10 @@ import org.jetbrains.annotations.Nullable;
 )
 public class AppSettingsState implements PersistentStateComponent<AppSettingsState> {
 
-    public String userId = "John Q. Public";
-    public boolean ideaStatus = false;
+    public String vaultAddr;
+    public VaultAuthType type;
+    public String oktaUsername;
+    public String oktaPassword;
 
     public static AppSettingsState getInstance() {
         return ServiceManager.getService(AppSettingsState.class);
