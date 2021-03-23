@@ -6,9 +6,16 @@ import java.io.File
 import java.io.IOException
 
 internal class Vault {
+    var addr: String = "http://localhost"
+        get() = field
+        set(value) { field = value }
+
     private companion object {
         private val mapper = jacksonObjectMapper()
         private val vaultExec get() = findExecutable("vault")
+
+
+
 
         private val executableSearchPaths = listOf(
             "/usr/local/bin",
@@ -59,6 +66,7 @@ internal class Vault {
 
     private fun <R> execute(pb: ProcessBuilder, onSuccess: (Process) -> R) =
         try {
+            pb.environment()["VAULT_ADDR"] = addr
             pb.start()
         } catch (err: IOException) {
             throw IOException(

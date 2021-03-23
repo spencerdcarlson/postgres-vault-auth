@@ -48,8 +48,12 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
         val mountPath = connection.connectionPoint.additionalJdbcProperties["vault.path"]
             ?: throw VaultAuthException(VaultBundle.message("invalidMountPath"))
 
+        val addr = connection.connectionPoint.additionalJdbcProperties["vault.addr"]
+            ?: throw VaultAuthException(VaultBundle.message("invalidMountPath"))
+
         return future {
             val json = try {
+                vault.addr = addr
                 vault.readJson(mountPath)
             } catch (err: JsonProcessingException) {
                 throw VaultAuthException(VaultBundle.message("jsonError"), err)
@@ -73,10 +77,14 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
     @Suppress("TooManyFunctions", "EmptyFunctionBlock", "MagicNumber")
     private class VaultWidget(dataSource: LocalDataSource) : DatabaseAuthProvider.AuthWidget {
         private val pathField = JBTextField()
-        private val panel = JPanel(GridLayoutManager(1, 6)).apply {
+        private val addrField = JBTextField()
+        private val panel = JPanel(GridLayoutManager(2, 6)).apply {
             val pathLabel = JBLabel(VaultBundle.message("pathLabel"))
+            val addrLabel = JBLabel(VaultBundle.message("vaultAddrLabel"))
             add(pathLabel, createLabelConstraints(0, 0, pathLabel.preferredSize.getWidth()))
             add(pathField, createSimpleConstraints(0, 1, 3))
+            add(addrLabel, createLabelConstraints(1, 0, pathLabel.preferredSize.getWidth()))
+            add(addrField, createSimpleConstraints(1, 1, 3))
 
             // dataSource
             val parser = JdbcUrlParserUtil.parsed(
@@ -91,10 +99,12 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
 
         override fun save(dataSource: LocalDataSource, copyCredentials: Boolean) {
             dataSource.additionalJdbcProperties["vault.path"] = pathField.text
+            dataSource.additionalJdbcProperties["vault.addr"] = addrField.text
         }
 
         override fun reset(dataSource: LocalDataSource, copyCredentials: Boolean) {
             pathField.text = (dataSource.additionalJdbcProperties["vault.path"] ?: "")
+            pathField.text = (dataSource.additionalJdbcProperties["vault.addr"] ?: "")
         }
 
         override fun updateFromUrl(holder: ParametersHolder) {

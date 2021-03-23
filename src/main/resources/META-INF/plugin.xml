@@ -5,9 +5,21 @@
 
     <!-- Product and plugin compatibility requirements -->
     <!-- https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.database</depends>
+
 
     <extensions defaultExtensionNs="com.intellij.database">
         <connectionInterceptor implementation="com.github.davidsteinsland.postgresvault.VaultAuth"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="org.intellij.sdk.settings.AppSettingsState"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationConfigurable parentId="tools" instance="org.intellij.sdk.settings.AppSettingsConfigurable"
+                                 id="org.intellij.sdk.settings.AppSettingsConfigurable"
+                                 displayName="SDK: Application Settings Example"/>
     </extensions>
 </idea-plugin>
