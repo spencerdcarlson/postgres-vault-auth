@@ -1,6 +1,6 @@
 package com.github.davidsteinsland.postgresvault;
 
-public enum VaultAuthType {
+public enum VaultAuthMethod {
     OIDC, OKTA
     // TOKEN, USERPASS, LDAP, GITHUB,
 }

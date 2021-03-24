@@ -3,81 +3,96 @@
 package com.github.davidsteinsland.postgresvault;
 
 import com.intellij.openapi.ui.ComboBox;
-import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.FormBuilder;
+import com.intellij.util.ui.UI;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.util.Map;
 
+import static com.github.davidsteinsland.postgresvault.VaultAuthMethod.OIDC;
+
 /**
  * Supports creating and managing a {@link JPanel} for the Settings Dialog.
  */
 public class AppSettingsComponent {
-    private final ComboBox<VaultAuthType> authType = new ComboBox<>(new DefaultComboBoxModel<>(VaultAuthType.values()));
-    private final JPanel myMainPanel;
-    private JPanel dynamicPannel = new JPanel();
+    private final ComboBox<VaultAuthMethod> authMethod = new ComboBox<>(new DefaultComboBoxModel<>(VaultAuthMethod.values()));
+    private final JPanel myMainPanel = new JPanel();
     private final JBTextField vaultAddr = new JBTextField();
     private final JBTextField username = new JBTextField(20);
     private final JPasswordField password = new JPasswordField(20);
-    private final JButton login = new JButton("Test Login");
+    private final JButton testButton = new JButton("Test Login");
 
     public AppSettingsComponent() {
-        vaultAddr.getEmptyText().setText("https://vault-addr.example.org");
+        myMainPanel.add(buildForm());
 
-        dynamicPannel = FormBuilder.createFormBuilder()
-                .addLabeledComponent(new JBLabel("Username: "), username, 1, false)
-                .addLabeledComponent(new JBLabel("Password: "), password, 1, false)
-                .getPanel();
-
-        myMainPanel = FormBuilder.createFormBuilder()
-                .addLabeledComponent(new JBLabel("VAULT_ADDR: "), vaultAddr, 1, false)
-                .addComponent(authType, 1)
-                .addComponent(dynamicPannel, 1)
-                .addComponent(login, 1)
-                .addComponentFillVertically(new JPanel(), 0)
-                .getPanel();
-
-        authType.addActionListener(e -> {
-            VaultAuthType value = (VaultAuthType)authType.getSelectedItem();
-            System.out.println("Value " + value.name());
-
-            switch (value) {
-                case OKTA:
-//                    dynamicPannel = FormBuilder.createFormBuilder()
-//                            .addLabeledComponent(new JBLabel("Username: "), username, 1, false)
-//                            .getPanel();
-
-                    break;
-                default:
-                    System.out.println("nothing");
-            }
-
-            myMainPanel.revalidate();
-            myMainPanel.repaint();
-
+        authMethod.addActionListener(e -> {
+            final VaultAuthMethod method = (VaultAuthMethod) authMethod.getSelectedItem();
+            repaint(method);
         });
 
-        login.addActionListener(e -> {
-            VaultAuthType value = (VaultAuthType)authType.getSelectedItem();
-            Map<String, String> extraArgs = null;
-            switch (value) {
-                case OKTA:
-                    extraArgs = Map.of("username", getUsername(), "password", getPassword());
-                    break;
-                default:
-                    System.out.println("Nothing");
-            }
-            Vault vault = new Vault();
-            if (vault.authenticate(value, extraArgs, true)) {
-                System.out.println("Valid!");
-            }
-            else {
-                System.out.println("Fail");
-            }
-
+        testButton.addActionListener(e -> {
+            final VaultAuthMethod method = (VaultAuthMethod) authMethod.getSelectedItem();
+            final Vault vault = new Vault();
+            vault.setAddr(getVaultAddrText());
+            vault.setAuthMethod(method);
+            repaint(method, vault.authenticate(getExtraArgs(method), true));
         });
+    }
+
+    private void repaint(final VaultAuthMethod method) {
+        repaint(method, null);
+    }
+
+    private void repaint(final VaultAuthMethod method, final Boolean isValid) {
+        myMainPanel.removeAll();
+        myMainPanel.add(buildForm(method, isValid));
+        myMainPanel.revalidate();
+        myMainPanel.updateUI();
+    }
+
+    private Map<String, String> getExtraArgs(final VaultAuthMethod method) {
+        switch (method) {
+            case OKTA:
+                return Map.of("username", getOktaUsername(), "password", getOktaPassword());
+            default:
+                return Map.of("", "");
+        }
+    }
+
+    private JPanel buildForm() {
+        return buildForm(null, null);
+    }
+
+    private JPanel buildForm(final VaultAuthMethod value, final Boolean valid) {
+        final FormBuilder builder = FormBuilder.createFormBuilder()
+                .addComponent(UI.PanelFactory.panel(vaultAddr).withLabel("Username:").withComment("https://vault-addr.example.org").createPanel(), 1)
+                .addComponent(UI.PanelFactory.panel(authMethod).withLabel("Auth Method:").createPanel(), 1)
+                .addComponent(buildDynamicForm(value), 1);
+
+        if (valid == null) {
+            builder.addComponent(UI.PanelFactory.panel(testButton).createPanel());
+        }
+        else if (valid) {
+            builder.addComponent(UI.PanelFactory.panel(testButton).withComment("<p style='color:green;'>Success</p>").createPanel());
+        }
+        else {
+            builder.addComponent(UI.PanelFactory.panel(testButton).withComment("<p style='color:red;'>Failure</p>").createPanel());
+        }
+        builder.addComponentFillVertically(new JPanel(), 0);
+        return builder.getPanel();
+    }
+
+    private JPanel buildDynamicForm(final VaultAuthMethod value) {
+        if (value == null || (value != null && value.equals(OIDC))) {
+            return new JPanel();
+        }
+
+        return FormBuilder.createFormBuilder()
+                .addComponent(UI.PanelFactory.panel(username).withLabel("Username:").createPanel(), 1)
+                .addComponent(UI.PanelFactory.panel(password).withLabel("Password:").createPanel(), 1)
+                .getPanel();
     }
 
     public JPanel getPanel() {
@@ -97,15 +112,15 @@ public class AppSettingsComponent {
         vaultAddr.setText(newText);
     }
 
-    public void setVaultAuthType(@NotNull VaultAuthType newType) {
-        authType.setItem(newType);
+    public void setVaultAuthMethod(@NotNull VaultAuthMethod method) {
+        this.authMethod.setItem(method);
     }
 
-    public VaultAuthType getVaultAuthType() {
-        return (VaultAuthType)authType.getSelectedItem();
+    public VaultAuthMethod getVaultAuthMethod() {
+        return (VaultAuthMethod) authMethod.getSelectedItem();
     }
 
-    public String getUsername() {
+    public String getOktaUsername() {
         return username.getText();
     }
 
@@ -113,7 +128,7 @@ public class AppSettingsComponent {
         this.username.setText(username);
     }
 
-    public String getPassword() {
+    public String getOktaPassword() {
         return String.valueOf(password.getPassword());
     }
 

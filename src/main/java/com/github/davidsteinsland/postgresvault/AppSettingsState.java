@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 public class AppSettingsState implements PersistentStateComponent<AppSettingsState> {
 
     public String vaultAddr;
-    public VaultAuthType type;
+    public VaultAuthMethod method;
     public String oktaUsername;
     public String oktaPassword;
 

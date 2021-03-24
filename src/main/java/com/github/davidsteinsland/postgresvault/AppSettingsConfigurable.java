@@ -40,9 +40,9 @@ public class AppSettingsConfigurable implements Configurable {
     public boolean isModified() {
         AppSettingsState settings = AppSettingsState.getInstance();
         boolean modified = !mySettingsComponent.getVaultAddrText().equals(settings.vaultAddr);
-        modified |= mySettingsComponent.getVaultAuthType() != settings.type;
-        modified |= mySettingsComponent.getUsername().equals(settings.oktaUsername);
-        modified |= mySettingsComponent.getPassword().equals(settings.oktaPassword);
+        modified |= mySettingsComponent.getVaultAuthMethod() != settings.method;
+        modified |= mySettingsComponent.getOktaUsername().equals(settings.oktaUsername);
+        modified |= mySettingsComponent.getOktaPassword().equals(settings.oktaPassword);
         return modified;
     }
 
@@ -50,16 +50,16 @@ public class AppSettingsConfigurable implements Configurable {
     public void apply() {
         AppSettingsState settings = AppSettingsState.getInstance();
         settings.vaultAddr = mySettingsComponent.getVaultAddrText();
-        settings.type = mySettingsComponent.getVaultAuthType();
-        settings.oktaUsername = mySettingsComponent.getUsername();
-        settings.oktaPassword = mySettingsComponent.getPassword();
+        settings.method = mySettingsComponent.getVaultAuthMethod();
+        settings.oktaUsername = mySettingsComponent.getOktaUsername();
+        settings.oktaPassword = mySettingsComponent.getOktaPassword();
     }
 
     @Override
     public void reset() {
         AppSettingsState settings = AppSettingsState.getInstance();
         mySettingsComponent.setVaultAddrText(settings.vaultAddr);
-        mySettingsComponent.setVaultAuthType(settings.type);
+        mySettingsComponent.setVaultAuthMethod(settings.method);
         mySettingsComponent.setUsername(settings.oktaUsername);
         mySettingsComponent.setPassword(settings.oktaPassword);
     }
