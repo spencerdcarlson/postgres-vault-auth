@@ -2,13 +2,25 @@
 
 package com.github.davidsteinsland.postgresvault;
 
+import com.intellij.execution.process.mediator.daemon.ProcessManager;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.FormBuilder;
 import com.intellij.util.ui.UI;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.util.Map;
 
 import static com.github.davidsteinsland.postgresvault.VaultAuthMethod.OIDC;
@@ -32,12 +44,21 @@ public class AppSettingsComponent {
             repaint(method);
         });
 
+
         testButton.addActionListener(e -> {
-            final VaultAuthMethod method = (VaultAuthMethod) authMethod.getSelectedItem();
-            final Vault vault = new Vault();
-            vault.setAddr(getVaultAddrText());
-            vault.setAuthMethod(method);
-            repaint(method, vault.authenticate(getExtraArgs(method), true));
+//            System.out.println("event " + ((AnActionEvent)e).getData());
+//            ProgressManager.getInstance().run(new Task.Backgroundable("", "Title"){
+//                public void run(@NotNull ProgressIndicator progressIndicator) {
+//
+//                }});
+
+            ApplicationManager.getApplication().executeOnPooledThread(() -> ApplicationManager.getApplication().invokeLaterOnWriteThread(() -> {
+                final VaultAuthMethod method = (VaultAuthMethod) authMethod.getSelectedItem();
+                final Vault vault = new Vault();
+                vault.setAddr(getVaultAddrText());
+                vault.setAuthMethod(method);
+                repaint(method, vault.authenticate(getExtraArgs(method), true));
+            }, ModalityState.stateForComponent(myMainPanel)));
         });
     }
 

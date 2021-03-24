@@ -6,11 +6,14 @@ import java.io.File
 import java.io.IOException
 import kotlin.streams.toList
 
+import com.github.davidsteinsland.postgresvault.VaultAuthMethod.OIDC
+
 internal class Vault {
     var addr: String = "http://localhost"
         get() = field
         set(value) { field = value }
-    var authMethod: VaultAuthMethod = VaultAuthMethod.OIDC
+
+    var authMethod: VaultAuthMethod = OIDC
         get() = field
         set(value) {field = value}
 
