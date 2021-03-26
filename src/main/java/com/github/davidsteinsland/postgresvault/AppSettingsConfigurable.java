@@ -13,7 +13,7 @@ import javax.swing.*;
  */
 public class AppSettingsConfigurable implements Configurable {
 
-    private AppSettingsComponent mySettingsComponent;
+    private AppSettingsComponent component;
 
     // A default constructor with no arguments is required because this implementation
     // is registered as an applicationConfigurable EP
@@ -26,47 +26,46 @@ public class AppSettingsConfigurable implements Configurable {
 
     @Override
     public JComponent getPreferredFocusedComponent() {
-        return mySettingsComponent.getPreferredFocusedComponent();
+        return component.getPreferredFocusedComponent();
     }
 
     @Nullable
     @Override
     public JComponent createComponent() {
-        mySettingsComponent = new AppSettingsComponent();
-        return mySettingsComponent.getPanel();
+        component = new AppSettingsComponent();
+        return component.getPanel();
     }
 
     @Override
     public boolean isModified() {
-        AppSettingsState settings = AppSettingsState.getInstance();
-        boolean modified = !mySettingsComponent.getVaultAddrText().equals(settings.vaultAddr);
-        modified |= mySettingsComponent.getVaultAuthMethod() != settings.method;
-        modified |= mySettingsComponent.getOktaUsername().equals(settings.oktaUsername);
-        modified |= mySettingsComponent.getOktaPassword().equals(settings.oktaPassword);
+        final AppSettingsState settings = AppSettingsState.getInstance();
+        boolean modified = !component.getVaultAddrText().equals(settings.vaultAddr);
+        modified |= component.getVaultAuthMethod() != settings.method;
+        modified |= !component.getOktaUserName().equals(CredentialsManager.oktaUsername());
+        modified |= !component.getOktaPassword().equals(CredentialsManager.oktaPassword());
         return modified;
     }
 
     @Override
     public void apply() {
         AppSettingsState settings = AppSettingsState.getInstance();
-        settings.vaultAddr = mySettingsComponent.getVaultAddrText();
-        settings.method = mySettingsComponent.getVaultAuthMethod();
-        settings.oktaUsername = mySettingsComponent.getOktaUsername();
-        settings.oktaPassword = mySettingsComponent.getOktaPassword();
+        settings.vaultAddr = component.getVaultAddrText();
+        settings.method = component.getVaultAuthMethod();
+        CredentialsManager.setOktaCredentials(component.getOktaUserName(), component.getOktaPassword());
     }
 
     @Override
     public void reset() {
-        AppSettingsState settings = AppSettingsState.getInstance();
-        mySettingsComponent.setVaultAddrText(settings.vaultAddr);
-        mySettingsComponent.setVaultAuthMethod(settings.method);
-        mySettingsComponent.setUsername(settings.oktaUsername);
-        mySettingsComponent.setPassword(settings.oktaPassword);
+        final AppSettingsState settings = AppSettingsState.getInstance();
+        component.setVaultAddrText(settings.vaultAddr);
+        component.setVaultAuthMethod(settings.method);
+        component.setOktaUsername(CredentialsManager.oktaUsername());
+        component.setOktaPassword(CredentialsManager.oktaPassword());
     }
 
     @Override
     public void disposeUIResources() {
-        mySettingsComponent = null;
+        component = null;
     }
 
 }

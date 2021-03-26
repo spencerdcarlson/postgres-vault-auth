@@ -20,12 +20,4 @@
                                  id="com.github.davidsteinsland.postgresvault.AppSettingsConfigurable"
                                  displayName="Vault"/>
     </extensions>
-    <actions>
-        <action id="com.github.davidsteinsland.postgresvault.PopupDialogAction"
-                class="com.github.davidsteinsland.postgresvault.PopupDialogAction" text="Test Vault Login"
-                description="Test vault login">
-
-            <add-to-group group-id="Internal.UI" anchor="first"/>
-        </action>
-    </actions>
 </idea-plugin>

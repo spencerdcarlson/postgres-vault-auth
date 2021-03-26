@@ -2,6 +2,7 @@
 
 package com.github.davidsteinsland.postgresvault;
 
+import com.intellij.credentialStore.Credentials;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
@@ -23,8 +24,6 @@ public class AppSettingsState implements PersistentStateComponent<AppSettingsSta
 
     public String vaultAddr;
     public VaultAuthMethod method;
-    public String oktaUsername;
-    public String oktaPassword;
 
     public static AppSettingsState getInstance() {
         return ServiceManager.getService(AppSettingsState.class);
