@@ -2,25 +2,25 @@
 
 package com.github.davidsteinsland.postgresvault;
 
-import com.intellij.execution.process.mediator.daemon.ProcessManager;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.ui.JBSplitter;
+import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.FormBuilder;
 import com.intellij.util.ui.UI;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import java.awt.*;
 import java.util.Map;
 
 import static com.github.davidsteinsland.postgresvault.VaultAuthMethod.OIDC;
@@ -30,10 +30,10 @@ import static com.github.davidsteinsland.postgresvault.VaultAuthMethod.OIDC;
  */
 public class AppSettingsComponent {
     private final ComboBox<VaultAuthMethod> authMethod = new ComboBox<>(new DefaultComboBoxModel<>(VaultAuthMethod.values()));
-    private final JPanel myMainPanel = new JPanel();
+    private final JPanel myMainPanel = new JPanel(new BorderLayout());
     private final JBTextField vaultAddr = new JBTextField();
-    private final JBTextField username = new JBTextField(20);
-    private final JPasswordField password = new JPasswordField(20);
+    private final JBTextField username = new JBTextField();
+    private final JPasswordField password = new JPasswordField();
     private final JButton testButton = new JButton("Test Login");
 
     public AppSettingsComponent() {
@@ -46,20 +46,34 @@ public class AppSettingsComponent {
 
 
         testButton.addActionListener(e -> {
-//            System.out.println("event " + ((AnActionEvent)e).getData());
-//            ProgressManager.getInstance().run(new Task.Backgroundable("", "Title"){
-//                public void run(@NotNull ProgressIndicator progressIndicator) {
-//
-//                }});
+            final VaultAuthMethod method = (VaultAuthMethod) authMethod.getSelectedItem();
+            final String title = new StringBuilder("vault login --method=").append(method.name().toLowerCase()).toString();
+            final Project project = ProjectManager.getInstance().getDefaultProject();
+            final Boolean isSuccess = ProgressManager.getInstance().run(new Task.WithResult<>(project, title, false) {
+                @Override
+                protected Boolean compute(@NotNull ProgressIndicator indicator) {
+                    indicator.setIndeterminate(true);
+                    indicator.setText(progressText(method));
 
-            ApplicationManager.getApplication().executeOnPooledThread(() -> ApplicationManager.getApplication().invokeLaterOnWriteThread(() -> {
-                final VaultAuthMethod method = (VaultAuthMethod) authMethod.getSelectedItem();
-                final Vault vault = new Vault();
-                vault.setAddr(getVaultAddrText());
-                vault.setAuthMethod(method);
-                repaint(method, vault.authenticate(getExtraArgs(method), true));
-            }, ModalityState.stateForComponent(myMainPanel)));
+                    final Vault vault = new Vault();
+                    vault.setAddr(getVaultAddrText());
+                    vault.setAuthMethod(method);
+
+                    return vault.authenticate(getExtraArgs(method), true);
+                }
+            });
+            repaint(method, isSuccess);
         });
+    }
+
+    private String progressText(VaultAuthMethod method) {
+        switch (method) {
+            case OKTA:
+                return "Check your phone";
+            case OIDC:
+                return "Check your browser";
+        }
+        return "";
     }
 
     private void repaint(final VaultAuthMethod method) {
@@ -88,17 +102,16 @@ public class AppSettingsComponent {
 
     private JPanel buildForm(final VaultAuthMethod value, final Boolean valid) {
         final FormBuilder builder = FormBuilder.createFormBuilder()
-                .addComponent(UI.PanelFactory.panel(vaultAddr).withLabel("Username:").withComment("https://vault-addr.example.org").createPanel(), 1)
-                .addComponent(UI.PanelFactory.panel(authMethod).withLabel("Auth Method:").createPanel(), 1)
+                .addComponent(UI.PanelFactory.panel(vaultAddr).withLabel("VAULT_ADDR:").withComment("https://vault-addr.example.org").createPanel(), 1)
+                .addComponent(new TitledSeparator("Authentication"))
+                .addComponent(UI.PanelFactory.panel(authMethod).withLabel("Method:").createPanel(), 1)
                 .addComponent(buildDynamicForm(value), 1);
 
         if (valid == null) {
             builder.addComponent(UI.PanelFactory.panel(testButton).createPanel());
-        }
-        else if (valid) {
+        } else if (valid) {
             builder.addComponent(UI.PanelFactory.panel(testButton).withComment("<p style='color:green;'>Success</p>").createPanel());
-        }
-        else {
+        } else {
             builder.addComponent(UI.PanelFactory.panel(testButton).withComment("<p style='color:red;'>Failure</p>").createPanel());
         }
         builder.addComponentFillVertically(new JPanel(), 0);
@@ -111,8 +124,8 @@ public class AppSettingsComponent {
         }
 
         return FormBuilder.createFormBuilder()
-                .addComponent(UI.PanelFactory.panel(username).withLabel("Username:").createPanel(), 1)
-                .addComponent(UI.PanelFactory.panel(password).withLabel("Password:").createPanel(), 1)
+                .addComponent(UI.PanelFactory.panel(username).withLabel("Username:").createPanel(), 2)
+                .addComponent(UI.PanelFactory.panel(password).withLabel("Password:").createPanel(), 2)
                 .getPanel();
     }
 
