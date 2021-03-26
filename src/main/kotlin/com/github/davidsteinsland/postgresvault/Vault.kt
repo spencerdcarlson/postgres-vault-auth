@@ -103,7 +103,8 @@ internal class Vault {
             val vaultAddress = if (!addr.isNullOrEmpty()) addr else AppSettingsState.getInstance().vaultAddr
             logger.debug("VAULT_ADDR=${vaultAddress}")
 
-            // TODO delete ~/.vault-token
+            // TODO delete ~/.vault-token after executing each command to restore session?
+            //  or move any existing ~/.vault-token to ~/.vault-token.backup and then restore after.
             pb.environment()["VAULT_ADDR"] = vaultAddress
             pb.start()
         } catch (err: IOException) {
