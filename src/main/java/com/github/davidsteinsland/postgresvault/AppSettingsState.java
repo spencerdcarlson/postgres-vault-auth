@@ -2,7 +2,6 @@
 
 package com.github.davidsteinsland.postgresvault;
 
-import com.intellij.credentialStore.Credentials;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;

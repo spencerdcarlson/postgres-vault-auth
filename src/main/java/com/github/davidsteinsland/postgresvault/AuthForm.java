@@ -1,29 +1,20 @@
 package com.github.davidsteinsland.postgresvault;
 
-import com.intellij.credentialStore.CredentialAttributes;
-import com.intellij.credentialStore.CredentialAttributesKt;
-import com.intellij.credentialStore.Credentials;
-import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.FormBuilder;
 import com.intellij.util.ui.UI;
-import org.jetbrains.annotations.NotNull;
 
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
+import javax.swing.*;
 
 import static com.github.davidsteinsland.postgresvault.VaultAuthMethod.OIDC;
 
 public class AuthForm {
-    private static final String subSystem = "com.github.davidsteinsland.postgresvault";
-    private VaultAuthMethod method = null;
     private final JBTextField oktaUsername = new JBTextField();
     private final JPasswordField oktaPassword = new JPasswordField();
-    private final CredentialAttributes credentialAttributes = new CredentialAttributes(CredentialAttributesKt.generateServiceName(subSystem, "okta"));
-    private Credentials oktaCredentials;
+    private VaultAuthMethod method = null;
 
 
-    public void setMethod(VaultAuthMethod method) {
+    public void setMethod(final VaultAuthMethod method) {
         this.method = method;
     }
 
@@ -38,18 +29,15 @@ public class AuthForm {
     }
 
     public String getOktaUsername() {
-        final String username = this.oktaUsername.getText();
-        System.out.println("getOktaUsername: " + username);
-        return username;
+        return this.oktaUsername.getText();
     }
 
-    public void setOktaUsername(String username) {
+    public void setOktaUsername(final String username) {
         this.oktaUsername.setText(username);
     }
 
     public String getOktaPassword() {
-        final String password = String.valueOf(this.oktaPassword.getPassword());
-        return password;
+        return String.valueOf(this.oktaPassword.getPassword());
     }
 
     public void setOktaPassword(final String password) {

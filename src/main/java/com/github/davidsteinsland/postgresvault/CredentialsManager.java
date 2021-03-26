@@ -4,57 +4,37 @@ import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.credentialStore.CredentialAttributesKt;
 import com.intellij.credentialStore.Credentials;
 import com.intellij.ide.passwordSafe.PasswordSafe;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
 
 public class CredentialsManager {
     private static final String subSystem = "com.github.davidsteinsland.postgresvault";
-    private final CredentialAttributes credentialAttributes;
-    private static CredentialsManager instance;
+    private static final CredentialAttributes oktaCredentialAttributes = new CredentialAttributes(CredentialAttributesKt.generateServiceName(subSystem, "okta"));
 
-    private CredentialsManager(){
-        this.credentialAttributes = new CredentialAttributes(CredentialAttributesKt.generateServiceName(subSystem, "okta"));
-    }
-
-    public static CredentialsManager getInstance() {
-        if (instance == null) {
-            instance = new CredentialsManager();
+    public static Map<String, String> args(final VaultAuthMethod method) {
+        switch (method) {
+            case OKTA:
+                return Map.of("username", oktaUsername(), "password", oktaPassword());
+            default:
+                return Map.of("", "");
         }
-        return instance;
     }
 
-    public static void setOktaCredentials(final String username, final String password) {
-        getInstance().setUsernameAndPassword(username, password);
+    public static void setOktaCredentials(@Nullable final String username, @Nullable final String password) {
+        PasswordSafe.getInstance().set(oktaCredentialAttributes, new Credentials(username, password));
     }
 
+    @NotNull
     public static String oktaUsername() {
-        return getInstance().getOktaUsername();
+        final Credentials credentials = PasswordSafe.getInstance().get(oktaCredentialAttributes);
+        return (credentials != null && credentials.getUserName() != null) ? credentials.getUserName() : "";
     }
 
+    @NotNull
     public static String oktaPassword() {
-        return getInstance().getOktaPassword();
-    }
-
-    public String getOktaUsername() {
-        final Credentials credentials = PasswordSafe.getInstance().get(credentialAttributes);
-        if (credentials != null) {
-            if (credentials.getUserName() == null) {
-                return "";
-            }
-            return credentials.getUserName();
-        }
-        return "";
-    }
-
-    public String getOktaPassword() {
-        final String password = PasswordSafe.getInstance().getPassword(credentialAttributes);
-        if (password == null) {
-            return "";
-        }
-        return password;
-    }
-
-    public void setUsernameAndPassword(@Nullable final String username, @Nullable final String password) {
-        System.out.println("Save username and password");
-        PasswordSafe.getInstance().set(credentialAttributes, new Credentials(username, password));
+        final String password = PasswordSafe.getInstance().getPassword(oktaCredentialAttributes);
+        return (password == null) ? "" : password;
     }
 }

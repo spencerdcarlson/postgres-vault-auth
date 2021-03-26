@@ -40,7 +40,7 @@ public class AppSettingsConfigurable implements Configurable {
     public boolean isModified() {
         final AppSettingsState settings = AppSettingsState.getInstance();
         boolean modified = !component.getVaultAddrText().equals(settings.vaultAddr);
-        modified |= component.getVaultAuthMethod() != settings.method;
+        modified |= component.getAuthMethod() != settings.method;
         modified |= !component.getOktaUserName().equals(CredentialsManager.oktaUsername());
         modified |= !component.getOktaPassword().equals(CredentialsManager.oktaPassword());
         return modified;
@@ -48,9 +48,9 @@ public class AppSettingsConfigurable implements Configurable {
 
     @Override
     public void apply() {
-        AppSettingsState settings = AppSettingsState.getInstance();
+        final AppSettingsState settings = AppSettingsState.getInstance();
         settings.vaultAddr = component.getVaultAddrText();
-        settings.method = component.getVaultAuthMethod();
+        settings.method = component.getAuthMethod();
         CredentialsManager.setOktaCredentials(component.getOktaUserName(), component.getOktaPassword());
     }
 
@@ -58,7 +58,7 @@ public class AppSettingsConfigurable implements Configurable {
     public void reset() {
         final AppSettingsState settings = AppSettingsState.getInstance();
         component.setVaultAddrText(settings.vaultAddr);
-        component.setVaultAuthMethod(settings.method);
+        component.setAuthMethod(settings.method);
         component.setOktaUsername(CredentialsManager.oktaUsername());
         component.setOktaPassword(CredentialsManager.oktaPassword());
     }

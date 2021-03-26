@@ -8,11 +8,11 @@ import com.intellij.database.dataSource.DatabaseAuthProvider
 import com.intellij.database.dataSource.DatabaseConnectionInterceptor.ProtoConnection
 import com.intellij.database.dataSource.DatabaseCredentialsAuthProvider
 import com.intellij.database.dataSource.LocalDataSource
-import com.intellij.database.dataSource.url.JdbcUrlParserUtil
 import com.intellij.database.dataSource.url.template.MutableParametersHolder
 import com.intellij.database.dataSource.url.template.ParametersHolder
 import com.intellij.database.dataSource.url.ui.UrlPropertiesPanel.createLabelConstraints
 import com.intellij.database.dataSource.url.ui.UrlPropertiesPanel.createSimpleConstraints
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
@@ -22,10 +22,19 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.future.future
+import org.apache.log4j.Level
 import java.util.concurrent.CompletionStage
 import javax.swing.JPanel
 
 class VaultAuth : DatabaseAuthProvider, CoroutineScope {
+    private val logger = Logger.getInstance(
+        VaultAuth::class.java
+    )
+
+    init {
+        logger.setLevel(Level.DEBUG)
+    }
+
     private val vault = Vault()
 
     override val coroutineContext = SupervisorJob() + Dispatchers.ApplicationThreadPool + CoroutineName("VaultAuth")
@@ -62,10 +71,20 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
             val username = json.path("data").path("username").asText()
             val password = json.path("data").path("password").asText()
 
+            logger.debug("Vault read response was successful. username=$username")
+
             if (username.isEmpty() || password.isEmpty()) {
                 throw VaultAuthException(VaultBundle.message("invalidResponse"))
             }
 
+            // FIXME: ConnectionException is thrown when using SSH on "Test Connection" click
+            //  2021-03-26 16:13:34,444 [ 157993]   INFO - om.intellij.ssh.impl.sshj.sshj -
+            //  Error from SSHJ local tunnel for SshjSshConnection(ssh-user@ssh-host)@6c9a5e18:
+            //  localhost:60695 ==> db-host:5432 while was closing < direct-tcpip
+            //  channel: id=0, recipient=0, localWin=[winSize=2094562], remoteWin=[winSize=2095692] >
+            //  net.schmizz.sshj.connection.ConnectionException: Disconnected
+            //
+            //  Connection still ends up working.
             DatabaseCredentialsAuthProvider.applyCredentials(
                 connection,
                 Credentials(username, password),
@@ -85,16 +104,6 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
             add(pathField, createSimpleConstraints(0, 1, 3))
             add(addrLabel, createLabelConstraints(1, 0, pathLabel.preferredSize.getWidth()))
             add(addrField, createSimpleConstraints(1, 1, 3))
-
-            // dataSource
-            val parser = JdbcUrlParserUtil.parsed(
-                dataSource.connectionConfig,
-                dataSource.url
-            )!!
-
-            val host = parser.getParameter("host") ?: return@apply
-            val db = parser.getParameter("database") ?: return@apply
-            determineMountPath(host, db)
         }
 
         override fun save(dataSource: LocalDataSource, copyCredentials: Boolean) {
@@ -104,21 +113,11 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
 
         override fun reset(dataSource: LocalDataSource, copyCredentials: Boolean) {
             pathField.text = (dataSource.additionalJdbcProperties["vault.path"] ?: "")
-            pathField.text = (dataSource.additionalJdbcProperties["vault.addr"] ?: "")
-        }
-
-        override fun updateFromUrl(holder: ParametersHolder) {
-            val host = holder.getParameter("host") ?: return
-            val database = holder.getParameter("database") ?: return
-            determineMountPath(host, database)
+            addrField.text = (dataSource.additionalJdbcProperties["vault.addr"] ?: "")
         }
 
         override fun updateUrl(holder: MutableParametersHolder) {}
-
-        private fun determineMountPath(host: String, database: String) {
-            val cluster = host.contains("prod").takeIf { it }?.let { "prod-fss" } ?: "preprod-fss"
-            pathField.text = "postgresql/$cluster/creds/$database-readonly"
-        }
+        override fun updateFromUrl(holder: ParametersHolder) {}
 
         override fun isPasswordChanged(): Boolean {
             return false
@@ -134,8 +133,7 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
 
         override fun getPreferredFocusedComponent() = pathField
 
-        override fun forceSave() {
-        }
+        override fun forceSave() {}
     }
 
     internal class VaultAuthException(msg: String, cause: Throwable? = null) : RuntimeException(msg, cause)
