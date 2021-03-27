@@ -31,10 +31,6 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
         VaultAuth::class.java
     )
 
-    init {
-        logger.setLevel(Level.DEBUG)
-    }
-
     private val vault = Vault()
 
     override val coroutineContext = SupervisorJob() + Dispatchers.ApplicationThreadPool + CoroutineName("VaultAuth")
@@ -72,6 +68,7 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
             val password = json.path("data").path("password").asText()
 
             logger.debug("Vault read response was successful. username=$username")
+            logger.trace("password=$password")
 
             if (username.isEmpty() || password.isEmpty()) {
                 throw VaultAuthException(VaultBundle.message("invalidResponse"))

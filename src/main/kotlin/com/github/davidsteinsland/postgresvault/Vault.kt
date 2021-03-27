@@ -13,9 +13,7 @@ internal class Vault {
         Vault::class.java
     )
 
-//    init { logger.setLevel(Level.DEBUG) }
-
-    var addr: String = "http://localhost"
+    var addr: String? = null
 
     private companion object {
         private val mapper = jacksonObjectMapper()
@@ -49,12 +47,13 @@ internal class Vault {
         val extraArgs =
             (args ?: CredentialsManager.args(method)).entries.stream().map { it.toString() }.toList().toTypedArray()
 
-        logger.debug("vault login -method=${method.name.toLowerCase()} ...")
+        logger.debug("vault login -method=${method.name.toLowerCase()} ... -format=json")
+        logger.trace("vault login -method=${method.name.toLowerCase()} ${extraArgs.contentToString()} -format=json")
 
         val json = try {
             executeAndReturnJson(vaultExec, "login", "-method=${method.name.toLowerCase()}", *extraArgs, "-format=json")
         } catch (err: JsonProcessingException) {
-            print(err.localizedMessage)
+            logger.error("Error parsing result during authentication.", err)
             return false
         }
         val username = json.path("auth").path("metadata").path("username").asText()
