@@ -1,12 +1,13 @@
-package com.github.davidsteinsland.postgresvault;
+package com.sdc.vault.settings.ui;
 
 import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.FormBuilder;
 import com.intellij.util.ui.UI;
+import com.sdc.vault.VaultAuthMethod;
 
 import javax.swing.*;
 
-import static com.github.davidsteinsland.postgresvault.VaultAuthMethod.OIDC;
+import static com.sdc.vault.VaultAuthMethod.OIDC;
 
 public class AuthForm {
     private final JBTextField oktaUsername = new JBTextField();

@@ -1,7 +1,7 @@
 <idea-plugin>
-    <id>com.github.davidsteinsland.postgresvault</id>
+    <id>com.sdc.vault</id>
     <name>Vault Auth</name>
-    <vendor>davidsteinsland</vendor>
+    <vendor>David Steinsland and Spencer Carlson</vendor>
 
     <!-- Product and plugin compatibility requirements -->
     <!-- https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
@@ -10,14 +10,14 @@
 
 
     <extensions defaultExtensionNs="com.intellij.database">
-        <connectionInterceptor implementation="com.github.davidsteinsland.postgresvault.VaultAuth" order="first"/>
+        <connectionInterceptor implementation="com.sdc.vault.ui.VaultAuthInterceptor" order="first"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.github.davidsteinsland.postgresvault.AppSettingsState"/>
+        <applicationService serviceImplementation="com.sdc.vault.state.AppSettingsState"/>
 
-        <applicationConfigurable parentId="tools" instance="com.github.davidsteinsland.postgresvault.AppSettingsConfigurable"
-                                 id="com.github.davidsteinsland.postgresvault.AppSettingsConfigurable"
+        <applicationConfigurable parentId="tools" instance="com.sdc.vault.settings.ui.AppSettingsConfigurable"
+                                 id="com.sdc.vault.settings.ui.AppSettingsConfigurable"
                                  displayName="Vault"/>
     </extensions>
 </idea-plugin>

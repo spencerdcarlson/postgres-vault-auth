@@ -1,7 +1,6 @@
-package com.github.davidsteinsland.postgresvault
+package com.sdc.vault.ui
 
 import com.fasterxml.jackson.core.JsonProcessingException
-import com.github.davidsteinsland.postgresvault.VaultBundle.property
 import com.intellij.application.ApplicationThreadPool
 import com.intellij.credentialStore.Credentials
 import com.intellij.database.access.DatabaseCredentials
@@ -18,6 +17,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.uiDesigner.core.GridLayoutManager
+import com.sdc.vault.Vault
+import com.sdc.vault.VaultBundle.property
+import com.sdc.vault.state.AppSettingsState
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,10 +28,8 @@ import kotlinx.coroutines.future.future
 import java.util.concurrent.CompletionStage
 import javax.swing.JPanel
 
-class VaultAuth : DatabaseAuthProvider, CoroutineScope {
-    private val logger = Logger.getInstance(VaultAuth::class.java)
-
-    private val vault = Vault()
+class VaultAuthInterceptor : DatabaseAuthProvider, CoroutineScope {
+    private val logger = Logger.getInstance(VaultAuthInterceptor::class.java)
 
     override val coroutineContext = SupervisorJob() + Dispatchers.ApplicationThreadPool + CoroutineName("VaultAuth")
     override fun getId() = "vault"
@@ -47,16 +47,13 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
     }
 
     override fun intercept(connection: ProtoConnection, silent: Boolean): CompletionStage<ProtoConnection>? {
-        val mountPath = connection.connectionPoint.additionalJdbcProperties["vault.path"]
-            ?: throw VaultAuthException(property("invalidMountPath"))
+        val path = connection.connectionPoint.additionalJdbcProperties["vault.path"] ?: ""
 
-        val addr = connection.connectionPoint.additionalJdbcProperties["vault.addr"]
-            ?: throw VaultAuthException(property("invalidMountPath"))
+        if (path.isNullOrEmpty()) throw VaultAuthException(property("invalidMountPath"))
 
         return future {
             val json = try {
-                vault.addr = addr
-                vault.readJson(mountPath)
+                Vault(connection.connectionPoint.additionalJdbcProperties["vault.addr"]).read(path)
             } catch (err: JsonProcessingException) {
                 throw VaultAuthException(property("jsonError"), err)
             }
@@ -67,7 +64,7 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
             logger.debug("Vault read response was successful. username=$username")
             logger.trace("password=$password")
 
-            if (username.isEmpty() || password.isEmpty()) {
+            if (username.isNullOrEmpty() || password.isNullOrEmpty()) {
                 throw VaultAuthException(property("invalidResponse"))
             }
 

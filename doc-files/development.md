@@ -9,10 +9,11 @@
     * Append `:trace` to class name to enable trace level (warning trace level logging emits credentials)
     * Example  
         * ```
-            #com.github.davidsteinsland.postgresvault.Vault:trace
-            #com.github.davidsteinsland.postgresvault.VaultAuth:trace
+            #com.sdc.vault.Vault:trace
+            #com.sdc.vault.ui.VaultAuthInterceptor:trace
           ```
 * Find Log File: *Help > Show Log in Finder*
 
+### Screenshot Examples
 ![Debug Log Settings](./img/Debug%20Log%20Settings.png)
 ![Configure](./img/Configure%20Debug%20Logs.png)

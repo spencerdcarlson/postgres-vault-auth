@@ -1,8 +1,10 @@
 // Copyright 2000-2020 JetBrains s.r.o. and other contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 
-package com.github.davidsteinsland.postgresvault;
+package com.sdc.vault.settings.ui;
 
 import com.intellij.openapi.options.Configurable;
+import com.sdc.vault.state.AppSettingsState;
+import com.sdc.vault.state.CredentialsManager;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,8 +43,8 @@ public class AppSettingsConfigurable implements Configurable {
         final AppSettingsState settings = AppSettingsState.getInstance();
         boolean modified = !component.getVaultAddrText().equals(settings.vaultAddr);
         modified |= component.getAuthMethod() != settings.method;
-        modified |= !component.getOktaUserName().equals(CredentialsManager.oktaUsername());
-        modified |= !component.getOktaPassword().equals(CredentialsManager.oktaPassword());
+        modified |= !component.getOktaUserName().equals(CredentialsManager.getOKTAUsername());
+        modified |= !component.getOktaPassword().equals(CredentialsManager.getOKTAPassword());
         return modified;
     }
 
@@ -59,8 +61,8 @@ public class AppSettingsConfigurable implements Configurable {
         final AppSettingsState settings = AppSettingsState.getInstance();
         component.setVaultAddrText(settings.vaultAddr);
         component.setAuthMethod(settings.method);
-        component.setOktaUsername(CredentialsManager.oktaUsername());
-        component.setOktaPassword(CredentialsManager.oktaPassword());
+        component.setOktaUsername(CredentialsManager.getOKTAUsername());
+        component.setOktaPassword(CredentialsManager.getOKTAPassword());
     }
 
     @Override

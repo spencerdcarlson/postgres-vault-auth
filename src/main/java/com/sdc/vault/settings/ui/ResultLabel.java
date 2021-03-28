@@ -1,4 +1,4 @@
-package com.github.davidsteinsland.postgresvault;
+package com.sdc.vault.settings.ui;
 
 import javax.swing.*;
 import java.awt.*;

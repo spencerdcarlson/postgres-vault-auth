@@ -1,19 +1,18 @@
-package com.github.davidsteinsland.postgresvault
+package com.sdc.vault
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.intellij.openapi.diagnostic.Logger
+import com.sdc.vault.state.AppSettingsState
+import com.sdc.vault.state.CredentialsManager
+import com.sdc.vault.state.VaultCredentialAdapter
 import java.io.File
 import java.io.IOException
 import kotlin.streams.toList
 
-internal class Vault {
-    private val logger = Logger.getInstance(
-        Vault::class.java
-    )
-
-    var addr: String? = null
+internal class Vault(private val address: String? = AppSettingsState.getInstance().vaultAddr) {
+    private val logger = Logger.getInstance(Vault::class.java)
 
     private companion object {
         private val mapper = jacksonObjectMapper()
@@ -34,18 +33,20 @@ internal class Vault {
                 ?: exec
     }
 
-    fun readJson(path: String): ObjectNode {
+    fun read(path: String): ObjectNode {
         authenticate()
         logger.debug("vault read $path -format=json")
         return executeAndReturnJson(vaultExec, "read", path, "-format=json")
     }
 
-    fun authenticate(args: Map<String, String>? = null, force: Boolean = false): Boolean {
+    fun authenticate(
+        method: VaultAuthMethod = AppSettingsState.getInstance().method,
+        args: Map<String, String> = VaultCredentialAdapter(method).getCredentials(CredentialsManager()),
+        force: Boolean = false
+    ): Boolean {
         if (isAuthenticated() && !force) return true
 
-        val method = AppSettingsState.getInstance().method
-        val extraArgs =
-            (args ?: CredentialsManager.args(method)).entries.stream().map { it.toString() }.toList().toTypedArray()
+        val extraArgs = args.entries.stream().map { it.toString() }.toList().toTypedArray()
 
         logger.debug("vault login -method=${method.name.toLowerCase()} ... -format=json")
         logger.trace("vault login -method=${method.name.toLowerCase()} ${extraArgs.contentToString()} -format=json")
@@ -99,12 +100,12 @@ internal class Vault {
 
     private fun <R> execute(pb: ProcessBuilder, onSuccess: (Process) -> R) =
         try {
-            val vaultAddress = if (!addr.isNullOrEmpty()) addr else AppSettingsState.getInstance().vaultAddr
-            logger.debug("VAULT_ADDR=${vaultAddress}")
+            val finalAddress = if (address.isNullOrEmpty()) AppSettingsState.getInstance().vaultAddr else address
+            logger.debug("VAULT_ADDR=${finalAddress}")
 
             // TODO delete ~/.vault-token after executing each command to restore session?
             //  or move any existing ~/.vault-token to ~/.vault-token.backup and then restore after.
-            pb.environment()["VAULT_ADDR"] = vaultAddress
+            pb.environment()["VAULT_ADDR"] = finalAddress
             pb.start()
         } catch (err: IOException) {
             throw IOException(

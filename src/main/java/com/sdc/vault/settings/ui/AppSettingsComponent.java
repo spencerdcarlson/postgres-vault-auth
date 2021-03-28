@@ -1,6 +1,6 @@
 // Copyright 2000-2020 JetBrains s.r.o. and other contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 
-package com.github.davidsteinsland.postgresvault;
+package com.sdc.vault.settings.ui;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -13,6 +13,9 @@ import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.FormBuilder;
 import com.intellij.util.ui.UI;
+import com.sdc.vault.Vault;
+import com.sdc.vault.VaultAuthMethod;
+import com.sdc.vault.state.VaultCredentialAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,15 +45,15 @@ public class AppSettingsComponent {
             final VaultAuthMethod method = (VaultAuthMethod) authMethod.getSelectedItem();
             final String title = new StringBuilder("vault login --method=").append(method.name().toLowerCase()).toString();
             final Project project = ProjectManager.getInstance().getDefaultProject();
+            final AppSettingsComponent instance = this;
             final Boolean isSuccess = ProgressManager.getInstance().run(new Task.WithResult<>(project, title, false) {
                 @Override
                 protected Boolean compute(@NotNull ProgressIndicator indicator) {
                     indicator.setIndeterminate(true);
                     indicator.setText(progressText(method));
 
-                    final Vault vault = new Vault();
-                    vault.setAddr(getVaultAddrText());
-                    return vault.authenticate(CredentialsManager.args(method), true);
+                    final Vault vault = new Vault(getVaultAddrText());
+                    return vault.authenticate(method, new VaultCredentialAdapter(method).getCredentials(instance), true);
                 }
             });
             repaint(method, isSuccess);
@@ -60,9 +63,9 @@ public class AppSettingsComponent {
     private String progressText(VaultAuthMethod method) {
         switch (method) {
             case OKTA:
-                return "Check your phone";
+                return "Check your 2FA device";
             case OIDC:
-                return "Check your browser";
+                return "Check your web browser";
         }
         return "";
     }
