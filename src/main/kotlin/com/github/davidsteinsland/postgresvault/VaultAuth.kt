@@ -1,6 +1,7 @@
 package com.github.davidsteinsland.postgresvault
 
 import com.fasterxml.jackson.core.JsonProcessingException
+import com.github.davidsteinsland.postgresvault.VaultBundle.property
 import com.intellij.application.ApplicationThreadPool
 import com.intellij.credentialStore.Credentials
 import com.intellij.database.access.DatabaseCredentials
@@ -22,24 +23,20 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.future.future
-import org.apache.log4j.Level
 import java.util.concurrent.CompletionStage
 import javax.swing.JPanel
 
 class VaultAuth : DatabaseAuthProvider, CoroutineScope {
-    private val logger = Logger.getInstance(
-        VaultAuth::class.java
-    )
+    private val logger = Logger.getInstance(VaultAuth::class.java)
 
     private val vault = Vault()
 
     override val coroutineContext = SupervisorJob() + Dispatchers.ApplicationThreadPool + CoroutineName("VaultAuth")
     override fun getId() = "vault"
 
-    override fun getDisplayName() = VaultBundle.message("name")
+    override fun getDisplayName() = property("name")
 
-    override fun isApplicable(dataSource: LocalDataSource) =
-        dataSource.dbms.isPostgres
+    override fun isApplicable(dataSource: LocalDataSource) = true
 
     override fun createWidget(
         project: Project?,
@@ -51,17 +48,17 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
 
     override fun intercept(connection: ProtoConnection, silent: Boolean): CompletionStage<ProtoConnection>? {
         val mountPath = connection.connectionPoint.additionalJdbcProperties["vault.path"]
-            ?: throw VaultAuthException(VaultBundle.message("invalidMountPath"))
+            ?: throw VaultAuthException(property("invalidMountPath"))
 
         val addr = connection.connectionPoint.additionalJdbcProperties["vault.addr"]
-            ?: throw VaultAuthException(VaultBundle.message("invalidMountPath"))
+            ?: throw VaultAuthException(property("invalidMountPath"))
 
         return future {
             val json = try {
                 vault.addr = addr
                 vault.readJson(mountPath)
             } catch (err: JsonProcessingException) {
-                throw VaultAuthException(VaultBundle.message("jsonError"), err)
+                throw VaultAuthException(property("jsonError"), err)
             }
 
             val username = json.path("data").path("username").asText()
@@ -71,7 +68,7 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
             logger.trace("password=$password")
 
             if (username.isEmpty() || password.isEmpty()) {
-                throw VaultAuthException(VaultBundle.message("invalidResponse"))
+                throw VaultAuthException(property("invalidResponse"))
             }
 
             // FIXME: ConnectionException is thrown when using SSH on "Test Connection" click
@@ -95,8 +92,10 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
         private val pathField = JBTextField()
         private val addrField = JBTextField()
         private val panel = JPanel(GridLayoutManager(2, 6)).apply {
-            val pathLabel = JBLabel(VaultBundle.message("pathLabel"))
-            val addrLabel = JBLabel(VaultBundle.message("vaultAddrLabel"))
+            addrField.emptyText.text = AppSettingsState.getInstance().vaultAddr
+            val pathLabel = JBLabel(property("pathLabel"))
+            val addrLabel = JBLabel(property("vaultAddrLabel"))
+
             add(pathLabel, createLabelConstraints(0, 0, pathLabel.preferredSize.getWidth()))
             add(pathField, createSimpleConstraints(0, 1, 3))
             add(addrLabel, createLabelConstraints(1, 0, pathLabel.preferredSize.getWidth()))
@@ -109,22 +108,19 @@ class VaultAuth : DatabaseAuthProvider, CoroutineScope {
         }
 
         override fun reset(dataSource: LocalDataSource, copyCredentials: Boolean) {
-            pathField.text = (dataSource.additionalJdbcProperties["vault.path"] ?: "")
-            addrField.text = (dataSource.additionalJdbcProperties["vault.addr"] ?: "")
+            pathField.text = dataSource.additionalJdbcProperties["vault.path"] ?: ""
+            addrField.text = dataSource.additionalJdbcProperties["vault.addr"] ?: ""
         }
 
         override fun updateUrl(holder: MutableParametersHolder) {}
+
         override fun updateFromUrl(holder: ParametersHolder) {}
 
-        override fun isPasswordChanged(): Boolean {
-            return false
-        }
+        override fun isPasswordChanged() = false
 
-        override fun hidePassword() {
-        }
+        override fun hidePassword() {}
 
-        override fun reloadCredentials() {
-        }
+        override fun reloadCredentials() {}
 
         override fun getComponent() = panel
 

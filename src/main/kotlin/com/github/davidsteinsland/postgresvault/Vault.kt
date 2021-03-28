@@ -92,7 +92,7 @@ internal class Vault {
         execute(ProcessBuilder(*command)) {
             if (it.exitValue() != 0) {
                 val errorText = it.errorStream.bufferedReader().readText()
-                throw IOException(VaultBundle.message("processFailed", command, errorText))
+                throw IOException(VaultBundle.property("processFailed", command, errorText))
             }
             mapper.readValue(it.inputStream, ObjectNode::class.java)
         }
@@ -108,7 +108,7 @@ internal class Vault {
             pb.start()
         } catch (err: IOException) {
             throw IOException(
-                VaultBundle.message(
+                VaultBundle.property(
                     "processFailed",
                     pb.command().joinToString(separator = " "),
                     err.message ?: ""

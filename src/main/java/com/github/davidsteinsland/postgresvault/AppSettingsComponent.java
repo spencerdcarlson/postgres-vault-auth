@@ -30,8 +30,6 @@ public class AppSettingsComponent {
     private final JButton testButton = new JButton("Test Login");
     private final AuthForm authForm = new AuthForm();
 
-//    static { logger.setLevel(Level.DEBUG); }
-
     public AppSettingsComponent() {
         mainPanel.add(buildForm());
 

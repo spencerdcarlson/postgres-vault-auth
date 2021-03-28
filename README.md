@@ -1,28 +1,15 @@
-# PostgreSQL Vault Auth
+# Vault Auth
 
 ![Build](https://github.com/davidsteinsland/postgres-vault-auth/workflows/Build/badge.svg)
 [![Version](https://img.shields.io/jetbrains/plugin/v/16104-postgresql-vault-auth.svg)](https://plugins.jetbrains.com/plugin/16104-postgresql-vault-auth)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/16104-postgresql-vault-auth.svg)](https://plugins.jetbrains.com/plugin/16104-postgresql-vault-auth)
 
 <!-- Plugin description -->
-Fetches credentials for a PostgreSQL database from
-Vault.
+Fetches credentials for a database from Vault.
 
-This plugin assumes that `vault` is installed and available.
-If you're not authenticated against Vault, the OIDC method
-is selected (which will trigger your browser to open a tab with the signin process).
+This plugin assumes that [vault](https://learn.hashicorp.com/tutorials/vault/getting-started-install?in=vault/getting-started) is installed and available.
+The currently supported authentication methods are [OIDC](https://www.vaultproject.io/docs/auth/jwt) (web browser flow) and [OKTA](https://www.vaultproject.io/docs/auth/okta)
 <!-- Plugin description end -->
-
-## Configuration (macOS)
-
-Until the plugin provides a way of configuring itself, the
-Vault address can be configured using the `VAULT_ADDR` environment variable.
-
-To make sure it is set for the IntelliJ editor, run the following and restart IntelliJ:
-
-```
-launchctl setenv VAULT_ADDR https://vault-addr.example.org
-``` 
 
 ## Installation
 
@@ -35,12 +22,13 @@ launchctl setenv VAULT_ADDR https://vault-addr.example.org
 
   Download the [latest release](https://github.com/davidsteinsland/postgres-vault-auth/releases/latest) and install it manually using
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+
+## Configuration
+For global configuration see <kbd>Settings/Preferences</kbd> > <kbd>Tools</kbd> > <kbd>Vault</kbd>
+
+See Database Properties for connection specific configurations
   
-### Postgres SVG logo Copyright
+### Vault SVG Logo
 
-Copyright © 2021, Daniel Lundin
-
-Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
-
-IN NO EVENT SHALL THE AUTHOR BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE AUTHOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-THE AUTHOR SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE AUTHOR HAS NO OBLIGATIONS TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+* [Source](https://worldvectorlogo.com/logo/vault-enterprise)
+* [Terms of use](https://worldvectorlogo.com/terms-of-use)

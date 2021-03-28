@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.github.davidsteinsland.postgresvault</id>
-    <name>PostgreSQL Vault Auth</name>
+    <name>Vault Auth</name>
     <vendor>davidsteinsland</vendor>
 
     <!-- Product and plugin compatibility requirements -->
@@ -10,7 +10,7 @@
 
 
     <extensions defaultExtensionNs="com.intellij.database">
-        <connectionInterceptor implementation="com.github.davidsteinsland.postgresvault.VaultAuth"/>
+        <connectionInterceptor implementation="com.github.davidsteinsland.postgresvault.VaultAuth" order="first"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
