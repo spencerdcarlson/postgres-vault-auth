@@ -19,12 +19,14 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.uiDesigner.core.GridLayoutManager
 import com.sdc.vault.Vault
 import com.sdc.vault.VaultBundle.property
+import com.sdc.vault.VaultService
 import com.sdc.vault.state.AppSettingsState
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.future.future
+import java.net.URI
 import java.util.concurrent.CompletionStage
 import javax.swing.JPanel
 
@@ -52,19 +54,13 @@ class VaultAuthInterceptor : DatabaseAuthProvider, CoroutineScope {
         if (path.isNullOrEmpty()) throw VaultAuthException(property("invalidMountPath"))
 
         return future {
-            val json = try {
-                Vault(connection.connectionPoint.additionalJdbcProperties["vault.addr"]).read(path)
-            } catch (err: JsonProcessingException) {
-                throw VaultAuthException(property("jsonError"), err)
-            }
+            val host = URI.create(connection.connectionPoint.additionalJdbcProperties["vault.addr"])
+            val credentials = VaultService().read(host, path = path)
 
-            val username = json.path("data").path("username").asText()
-            val password = json.path("data").path("password").asText()
+            logger.debug("Vault read response was successful. username=${credentials.userName}")
+            logger.trace("password=${credentials.password}")
 
-            logger.debug("Vault read response was successful. username=$username")
-            logger.trace("password=$password")
-
-            if (username.isNullOrEmpty() || password.isNullOrEmpty()) {
+            if (credentials.userName.isNullOrEmpty() || credentials.password.isNullOrEmpty()) {
                 throw VaultAuthException(property("invalidResponse"))
             }
 
@@ -78,7 +74,7 @@ class VaultAuthInterceptor : DatabaseAuthProvider, CoroutineScope {
             //  Connection still ends up working.
             DatabaseCredentialsAuthProvider.applyCredentials(
                 connection,
-                Credentials(username, password),
+                credentials,
                 true
             )
         }
