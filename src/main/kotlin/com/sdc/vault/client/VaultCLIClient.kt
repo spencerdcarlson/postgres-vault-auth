@@ -13,6 +13,10 @@ import java.net.URI
 import java.nio.file.Paths
 import kotlin.streams.toList
 
+/**
+ * VaultCLIClient is used to authenticate so we don't have to build out all of the
+ * possible flows, open web browser, oath, etc
+ */
 class VaultCLIClient {
     private val logger = Logger.getInstance(VaultCLIClient::class.java)
     private val mapper = jacksonObjectMapper()

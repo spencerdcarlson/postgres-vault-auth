@@ -14,10 +14,6 @@ internal class VaultService {
     private val logger = Logger.getInstance(VaultService::class.java)
     private val client = VaultHTTPClient()
 
-    init {
-        logger.setLevel(Level.DEBUG)
-    }
-
     fun authenticate(
         host: URI = URI.create(AppSettingsState.getInstance().vaultAddr),
         method: VaultAuthMethod = VaultAuthMethod.OIDC,
