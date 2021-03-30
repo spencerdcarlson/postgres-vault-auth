@@ -1,9 +1,8 @@
-package com.sdc.vault
+package com.sdc.vault.client
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.intellij.openapi.diagnostic.Logger
-import com.sdc.vault.state.AppSettingsState
 import java.net.Authenticator
 import java.net.URI
 import java.net.http.HttpClient
@@ -13,7 +12,7 @@ import java.net.http.HttpResponse.BodyHandlers
 import java.time.Duration
 
 
-internal class VaultHTTPClient(private val baseURI: URI = URI.create(AppSettingsState.getInstance().vaultAddr)) {
+class VaultHTTPClient {
     private val logger = Logger.getInstance(VaultHTTPClient::class.java)
     private val mapper = jacksonObjectMapper()
     private val client = HttpClient.newBuilder()
@@ -23,7 +22,8 @@ internal class VaultHTTPClient(private val baseURI: URI = URI.create(AppSettings
         .authenticator(Authenticator.getDefault())
         .build()
 
-    fun read(host: URI = baseURI, token: String, path: String): ObjectNode? {
+    fun read(host: URI, token: String, path: String): ObjectNode? {
+        logger.debug("Read secret host=${host.host} path=$path")
         val request = HttpRequest.newBuilder()
             .uri(host.resolve(URI.create("/v1/").resolve(URI.create(path))))
             .timeout(Duration.ofMinutes(2))
@@ -36,9 +36,9 @@ internal class VaultHTTPClient(private val baseURI: URI = URI.create(AppSettings
             .get()
     }
 
-    fun lookupToken(host: URI = baseURI, token: String): ObjectNode? {
+    fun lookupToken(host: URI, token: String): ObjectNode? {
         // https://www.vaultproject.io/api/auth/token#lookup-a-token-self
-        logger.debug("looking up token info about current token for ${host.toASCIIString()}")
+        logger.debug("Look up token. host=${host.host}")
         val request = HttpRequest.newBuilder()
             .uri(host.resolve(URI.create("/v1/auth/token/lookup-self")))
             .timeout(Duration.ofMinutes(2))

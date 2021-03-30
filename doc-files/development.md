@@ -9,7 +9,9 @@
     * Append `:trace` to class name to enable trace level (warning trace level logging emits credentials)
     * Example  
         * ```
-            #com.sdc.vault.Vault:trace
+            #com.sdc.vault.VaultService:trace
+            #com.sdc.vault.client.VaultCLIClient:trace
+            #com.sdc.vault.client.VaultHTTPClient:trace
             #com.sdc.vault.ui.VaultAuthInterceptor:trace
           ```
 * Find Log File: *Help > Show Log in Finder*

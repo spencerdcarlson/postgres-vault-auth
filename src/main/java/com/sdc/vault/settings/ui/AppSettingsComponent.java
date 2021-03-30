@@ -13,14 +13,15 @@ import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.FormBuilder;
 import com.intellij.util.ui.UI;
-import com.sdc.vault.Vault;
 import com.sdc.vault.VaultAuthMethod;
+import com.sdc.vault.VaultService;
 import com.sdc.vault.state.VaultCredentialAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.URI;
 
 /**
  * Supports creating and managing a {@link JPanel} for the Settings Dialog.
@@ -51,9 +52,7 @@ public class AppSettingsComponent {
                 protected Boolean compute(@NotNull ProgressIndicator indicator) {
                     indicator.setIndeterminate(true);
                     indicator.setText(progressText(method));
-
-                    final Vault vault = new Vault(getVaultAddrText());
-                    return vault.authenticate(method, new VaultCredentialAdapter(method).getCredentials(instance), true);
+                    return new VaultService().authenticate(URI.create(getVaultAddrText()), method, new VaultCredentialAdapter(method).getCredentials(instance), true, true);
                 }
             });
             repaint(method, isSuccess);

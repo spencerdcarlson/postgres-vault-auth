@@ -1,8 +1,6 @@
 package com.sdc.vault.ui
 
-import com.fasterxml.jackson.core.JsonProcessingException
 import com.intellij.application.ApplicationThreadPool
-import com.intellij.credentialStore.Credentials
 import com.intellij.database.access.DatabaseCredentials
 import com.intellij.database.dataSource.DatabaseAuthProvider
 import com.intellij.database.dataSource.DatabaseConnectionInterceptor.ProtoConnection
@@ -17,7 +15,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.uiDesigner.core.GridLayoutManager
-import com.sdc.vault.Vault
 import com.sdc.vault.VaultBundle.property
 import com.sdc.vault.VaultService
 import com.sdc.vault.state.AppSettingsState
@@ -55,7 +52,7 @@ class VaultAuthInterceptor : DatabaseAuthProvider, CoroutineScope {
 
         return future {
             val host = URI.create(connection.connectionPoint.additionalJdbcProperties["vault.addr"])
-            val credentials = VaultService().read(host, path = path)
+            val credentials = VaultService().read(host, path)
 
             logger.debug("Vault read response was successful. username=${credentials.userName}")
             logger.trace("password=${credentials.password}")
