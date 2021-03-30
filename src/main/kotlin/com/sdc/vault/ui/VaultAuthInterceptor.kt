@@ -38,9 +38,9 @@ class VaultAuthInterceptor : DatabaseAuthProvider, CoroutineScope {
     override fun isApplicable(dataSource: LocalDataSource) = true
 
     override fun createWidget(
-        project: Project?,
-        credentials: DatabaseCredentials,
-        dataSource: LocalDataSource
+            project: Project?,
+            credentials: DatabaseCredentials,
+            dataSource: LocalDataSource
     ): DatabaseAuthProvider.AuthWidget {
         return VaultWidget(dataSource)
     }
@@ -70,9 +70,9 @@ class VaultAuthInterceptor : DatabaseAuthProvider, CoroutineScope {
             //
             //  Connection still ends up working.
             DatabaseCredentialsAuthProvider.applyCredentials(
-                connection,
-                credentials,
-                true
+                    connection,
+                    credentials,
+                    true
             )
         }
     }

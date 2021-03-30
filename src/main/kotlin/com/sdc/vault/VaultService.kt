@@ -7,7 +7,6 @@ import com.sdc.vault.client.VaultHTTPClient
 import com.sdc.vault.state.AppSettingsState
 import com.sdc.vault.state.CredentialsManager
 import com.sdc.vault.state.VaultCredentialAdapter
-import org.apache.log4j.Level
 import java.net.URI
 
 internal class VaultService {
@@ -15,11 +14,11 @@ internal class VaultService {
     private val client = VaultHTTPClient()
 
     fun authenticate(
-        host: URI = URI.create(AppSettingsState.getInstance().vaultAddr),
-        method: VaultAuthMethod = VaultAuthMethod.OIDC,
-        args: Map<String, String> = VaultCredentialAdapter(method).credentials,
-        force: Boolean = false,
-        refresh: Boolean = false
+            host: URI = URI.create(AppSettingsState.getInstance().vaultAddr),
+            method: VaultAuthMethod = VaultAuthMethod.OIDC,
+            args: Map<String, String> = VaultCredentialAdapter(method).credentials,
+            force: Boolean = false,
+            refresh: Boolean = false
     ): Boolean {
         logger.debug("Authenticate. force=$force method=$method")
         logger.trace("Authenticate. args=$args")
@@ -33,8 +32,8 @@ internal class VaultService {
     }
 
     private fun isAuthenticated(
-        host: URI = URI.create(AppSettingsState.getInstance().vaultAddr),
-        token: String = CredentialsManager.getVaultToken(getHost(host))
+            host: URI = URI.create(AppSettingsState.getInstance().vaultAddr),
+            token: String = CredentialsManager.getVaultToken(getHost(host))
     ): Boolean {
         logger.debug("Is the user authenticated. host=${host.host}")
         logger.trace("Is the user authenticated. token=$token")
@@ -50,9 +49,9 @@ internal class VaultService {
     }
 
     fun read(
-        host: URI = URI.create(AppSettingsState.getInstance().vaultAddr),
-        path: String,
-        token: String = CredentialsManager.getVaultToken(getHost(host))
+            host: URI = URI.create(AppSettingsState.getInstance().vaultAddr),
+            path: String,
+            token: String = CredentialsManager.getVaultToken(getHost(host))
     ): Credentials {
         logger.debug("Reading secret. host=${getHost(host).host} path=$path")
         logger.trace("Reading secret. token=$token")
@@ -71,5 +70,5 @@ internal class VaultService {
     }
 
     private fun getHost(host: URI) =
-        if (host.host.isNullOrEmpty()) URI.create(AppSettingsState.getInstance().vaultAddr) else host
+            if (host.host.isNullOrEmpty()) URI.create(AppSettingsState.getInstance().vaultAddr) else host
 }

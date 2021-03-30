@@ -22,19 +22,19 @@ class VaultCLIClient {
     private val mapper = jacksonObjectMapper()
     private val vaultExec get() = findExecutable("vault")
     private val executableSearchPaths = listOf(
-        "/usr/local/bin",
-        "/usr/bin",
-        "/bin",
-        "/usr/sbin",
-        "/sbin",
-        System.getProperty("user.home") + "/bin"
+            "/usr/local/bin",
+            "/usr/bin",
+            "/bin",
+            "/usr/sbin",
+            "/sbin",
+            System.getProperty("user.home") + "/bin"
     )
 
     private fun findExecutable(exec: String) =
-        executableSearchPaths
-            .firstOrNull { File(it, exec).exists() }
-            ?.let { "$it/$exec" }
-            ?: exec
+            executableSearchPaths
+                    .firstOrNull { File(it, exec).exists() }
+                    ?.let { "$it/$exec" }
+                    ?: exec
 
     fun authenticate(host: URI, method: VaultAuthMethod, args: Map<String, String>): Boolean {
         val extraArgs = args.entries.stream().map { it.toString() }.toList().toTypedArray()
@@ -44,12 +44,12 @@ class VaultCLIClient {
 
         val json = try {
             executeAndReturnJson(
-                host,
-                vaultExec,
-                "login",
-                "-method=${method.name.toLowerCase()}",
-                *extraArgs,
-                "-format=json"
+                    host,
+                    vaultExec,
+                    "login",
+                    "-method=${method.name.toLowerCase()}",
+                    *extraArgs,
+                    "-format=json"
             )
         } catch (e: JsonProcessingException) {
             logger.error("Error parsing result during authentication.", e)
@@ -65,28 +65,28 @@ class VaultCLIClient {
     }
 
     private fun executeAndReturnJson(host: URI, vararg command: String) =
-        execute(host, ProcessBuilder(*command)) {
-            if (it.exitValue() != 0) {
-                val errorText = it.errorStream.bufferedReader().readText()
-                throw IOException(VaultBundle.property("processFailed", command, errorText))
+            execute(host, ProcessBuilder(*command)) {
+                if (it.exitValue() != 0) {
+                    val errorText = it.errorStream.bufferedReader().readText()
+                    throw IOException(VaultBundle.property("processFailed", command, errorText))
+                }
+                mapper.readValue(it.inputStream, ObjectNode::class.java)
             }
-            mapper.readValue(it.inputStream, ObjectNode::class.java)
-        }
 
     private fun <R> execute(host: URI, pb: ProcessBuilder, onSuccess: (Process) -> R) =
-        try {
-            logger.debug("VAULT_ADDR=${host}")
-            pb.environment()["VAULT_ADDR"] = host.toString()
-            pb.start()
-        } catch (err: IOException) {
-            throw IOException(
-                VaultBundle.property(
-                    "processFailed",
-                    pb.command().joinToString(separator = " "),
-                    err.message ?: ""
+            try {
+                logger.debug("VAULT_ADDR=${host}")
+                pb.environment()["VAULT_ADDR"] = host.toString()
+                pb.start()
+            } catch (err: IOException) {
+                throw IOException(
+                        VaultBundle.property(
+                                "processFailed",
+                                pb.command().joinToString(separator = " "),
+                                err.message ?: ""
+                        )
                 )
-            )
-        }.also { it.waitFor() }.let(onSuccess)
+            }.also { it.waitFor() }.let(onSuccess)
 
     fun readToken(): String {
         return try {

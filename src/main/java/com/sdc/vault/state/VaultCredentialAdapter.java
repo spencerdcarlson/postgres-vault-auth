@@ -15,6 +15,7 @@ public class VaultCredentialAdapter {
 
     /**
      * Adapts {@link CredentialsManager} to {@link com.sdc.vault.VaultService#authenticate(URI, VaultAuthMethod, Map, boolean)}
+     *
      * @return
      */
     public Map<String, String> getCredentials() {
@@ -28,6 +29,7 @@ public class VaultCredentialAdapter {
 
     /**
      * Adapts {@link AppSettingsComponent} to {@link com.sdc.vault.VaultService#authenticate(URI, VaultAuthMethod, Map, boolean)}
+     *
      * @param component
      * @return
      */
