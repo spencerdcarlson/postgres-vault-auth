@@ -3,6 +3,7 @@ package com.sdc.vault.client
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.diagnostic.Logger
 import com.sdc.vault.VaultAuthMethod
 import com.sdc.vault.VaultBundle
@@ -79,10 +80,13 @@ class VaultCLIClient {
                 pb.environment()["VAULT_ADDR"] = host.toString()
                 pb.start()
             } catch (err: IOException) {
+                if (err.message?.contains("""Cannot run program "vault"""") == true) {
+                    BrowserUtil.browse(URI("https://learn.hashicorp.com/tutorials/vault/getting-started-install"))
+                }
                 throw IOException(
                         VaultBundle.property(
                                 "processFailed",
-                                pb.command().joinToString(separator = " "),
+                                "vault cmd",
                                 err.message ?: ""
                         )
                 )

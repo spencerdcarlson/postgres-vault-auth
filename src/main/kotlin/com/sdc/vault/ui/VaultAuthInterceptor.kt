@@ -42,7 +42,7 @@ class VaultAuthInterceptor : DatabaseAuthProvider, CoroutineScope {
             credentials: DatabaseCredentials,
             dataSource: LocalDataSource
     ): DatabaseAuthProvider.AuthWidget {
-        return VaultWidget(dataSource)
+        return VaultWidget()
     }
 
     override fun intercept(connection: ProtoConnection, silent: Boolean): CompletionStage<ProtoConnection>? {
@@ -78,7 +78,7 @@ class VaultAuthInterceptor : DatabaseAuthProvider, CoroutineScope {
     }
 
     @Suppress("TooManyFunctions", "EmptyFunctionBlock", "MagicNumber")
-    private class VaultWidget(dataSource: LocalDataSource) : DatabaseAuthProvider.AuthWidget {
+    private class VaultWidget : DatabaseAuthProvider.AuthWidget {
         private val pathField = JBTextField()
         private val addrField = JBTextField()
         private val panel = JPanel(GridLayoutManager(2, 6)).apply {
