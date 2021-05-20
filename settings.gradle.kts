@@ -1,1 +1,1 @@
-rootProject.name = "postgres-vault-auth"
+rootProject.name = "vault-auth"

@@ -83,6 +83,7 @@ class VaultCLIClient {
                 if (err.message?.contains("""Cannot run program "vault"""") == true) {
                     BrowserUtil.browse(URI("https://learn.hashicorp.com/tutorials/vault/getting-started-install"))
                 }
+                logger.trace("Failed to execute the following command. " + pb.command().joinToString(separator = " "))
                 throw IOException(
                         VaultBundle.property(
                                 "processFailed",
